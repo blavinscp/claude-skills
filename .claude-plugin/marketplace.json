@@ -546,6 +546,27 @@
         "product"
       ],
       "category": "product"
+    },
+    {
+      "name": "salesforce-cicd-pipeline",
+      "source": "./salesforce-cicd",
+      "description": "Salesforce CI/CD pipeline replacing Copado: validate, promote, deploy, back-promote, profile-clean, audit-log, CCB submission. 9 Python tools, 15 reference docs, 8 agents. GitLab MCP integration, HIPAA audit trails, OmniStudio sequencing, Health Cloud compliance.",
+      "version": "2.1.2",
+      "author": {
+        "name": "Alireza Rezvani"
+      },
+      "keywords": [
+        "salesforce",
+        "cicd",
+        "devops",
+        "deployment",
+        "copado",
+        "health-cloud",
+        "hipaa",
+        "omnistudio",
+        "gitlab"
+      ],
+      "category": "development"
     }
   ]
 }

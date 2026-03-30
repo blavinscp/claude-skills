@@ -1,0 +1,13 @@
+{
+  "name": "salesforce-cicd-pipeline",
+  "description": "Salesforce CI/CD pipeline skills: validate, promote, deploy, back-promote, profile-clean, audit-log, and CCB submission. Replaces Copado with GitLab MCP-based promotions, HIPAA-compliant audit trails, OmniStudio sequencing, and Health Cloud support.",
+  "version": "2.1.2",
+  "author": {
+    "name": "Alireza Rezvani",
+    "url": "https://alirezarezvani.com"
+  },
+  "homepage": "https://github.com/alirezarezvani/claude-skills/tree/main/salesforce-cicd",
+  "repository": "https://github.com/alirezarezvani/claude-skills",
+  "license": "MIT",
+  "skills": "./"
+}

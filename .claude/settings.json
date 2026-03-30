@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sf project deploy:*)",
+      "Bash(sf project retrieve:*)",
+      "Bash(python3 salesforce-cicd/*/scripts/*)"
+    ]
+  }
+}
