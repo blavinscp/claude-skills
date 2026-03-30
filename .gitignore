@@ -21,8 +21,6 @@ medium-content-pro.zip
 v1-10-2025-medium-content-pro.zip
 
 # Project-specific exclusions
-AGENTS.md
-PROMPTS.md
 medium-content-pro/*
 medium-content-pro 2/*
 documentation/GIST_CONTENT.md
