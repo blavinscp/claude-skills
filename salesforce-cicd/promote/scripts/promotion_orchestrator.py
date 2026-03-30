@@ -20,6 +20,15 @@ class CLIError(Exception):
     pass
 
 
+def detect_tool(cmd_parts: list) -> bool:
+    """Check if a CLI tool is available by running it."""
+    try:
+        subprocess.run(cmd_parts, capture_output=True, timeout=10)
+        return True
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+
 ENV_BRANCHES = {
     "dev1": "dev1",
     "qa": "qa",
@@ -211,13 +220,45 @@ def orchestrate(args: argparse.Namespace) -> PromotionReport:
         dry_run=args.dry_run,
     )
 
+    # Step 2b: Generate delta manifest with SGD (if available)
+    manifest_path = "force-app/main/default/package.xml"
+    to_env_branch = ENV_BRANCHES.get(args.to_env, args.to_env)
+
+    if detect_tool(["sf", "sgd", "--help"]):
+        sgd_cmd = [
+            "sf", "sgd", "source", "delta",
+            "--from", f"origin/{to_env_branch}",
+            "--to", report.bundle_branch,
+            "--output-dir", "delta/",
+            "--generate-delta",
+            "--json",
+        ]
+        sgd_step = run_step("generate_delta", sgd_cmd, report, dry_run=args.dry_run)
+
+        if sgd_step.status == "success":
+            manifest_path = "delta/package/package.xml"
+
+            # Optionally clean up the manifest with jayree
+            if detect_tool(["sf", "jayree", "manifest", "--help"]):
+                cleanup_cmd = [
+                    "sf", "jayree", "manifest", "cleanup",
+                    "--file", manifest_path,
+                ]
+                run_step("manifest_cleanup", cleanup_cmd, report, dry_run=args.dry_run)
+    else:
+        report.steps.append(StepResult(
+            step="generate_delta",
+            status="skipped",
+            message="sfdx-git-delta not installed — using existing manifest",
+        ))
+
     # Step 3: Validation
     if not args.skip_validate:
         test_level = "RunSpecifiedTests" if args.hotfix else "RunLocalTests"
         validate_cmd = [
             "python3", "salesforce-cicd/validate/scripts/validate_deployment.py",
             "--target-org", args.to_env,
-            "--manifest", "force-app/main/default/package.xml",
+            "--manifest", manifest_path,
             "--test-level", test_level,
             "--format", "json",
         ]

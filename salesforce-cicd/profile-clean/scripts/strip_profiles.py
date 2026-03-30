@@ -16,6 +16,7 @@ import copy
 import json
 import os
 import re
+import subprocess
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -56,6 +57,15 @@ STANDARD_OBJECTS = {
     "Individual", "PersonAccount", "CaseComment", "FeedItem",
     "ContentDocumentLink", "ContentNote",
 }
+
+
+def detect_tool(cmd_parts: list) -> bool:
+    """Check whether an external CLI tool is available."""
+    try:
+        subprocess.run(cmd_parts, capture_output=True, timeout=10)
+        return True
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
 
 
 def parse_package_xml(manifest_path):
@@ -452,6 +462,33 @@ def main():
                 "managed_package_refs_kept": total_managed,
             },
         }
+
+        # Optional post-processing: tidy XML with force-md if available
+        if not args.dry_run and files_modified > 0 and detect_tool(["force-md", "--help"]):
+            tidied = 0
+            modified_profiles = [
+                str(d["file"]) for d in details
+                if d["stripped"] and not d.get("skipped")
+                and str(d["file"]).endswith(".profile-meta.xml")
+            ]
+            modified_permsets = [
+                str(d["file"]) for d in details
+                if d["stripped"] and not d.get("skipped")
+                and str(d["file"]).endswith(".permissionset-meta.xml")
+            ]
+            if modified_profiles:
+                subprocess.run(
+                    ["force-md", "profile", "tidy"] + modified_profiles,
+                    capture_output=True, timeout=60,
+                )
+                tidied += len(modified_profiles)
+            if modified_permsets:
+                subprocess.run(
+                    ["force-md", "permissionset", "tidy"] + modified_permsets,
+                    capture_output=True, timeout=60,
+                )
+                tidied += len(modified_permsets)
+            report["summary"]["tidied_files"] = tidied
 
     if args.format == "json":
         print(format_json(report))

@@ -20,6 +20,15 @@ class CLIError(Exception):
     pass
 
 
+def detect_tool(cmd_parts: list) -> bool:
+    """Check if a CLI tool is available by running it."""
+    try:
+        subprocess.run(cmd_parts, capture_output=True, timeout=10)
+        return True
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+
 ENV_BRANCHES = {
     "dev1": "dev1",
     "qa": "qa",
@@ -48,6 +57,7 @@ class BundleReport:
     auto_resolved: List[str] = field(default_factory=list)
     manual_review: List[str] = field(default_factory=list)
     status: str = "pending"
+    delta_manifest: str = ""
     created_at: str = ""
 
 
@@ -218,6 +228,23 @@ def create_bundle(args: argparse.Namespace) -> BundleReport:
         report.status = "partial"
     else:
         report.status = "ready"
+
+    # Generate delta manifest with SGD if available and bundle is ready
+    if report.status == "ready" and detect_tool(["sf", "sgd", "--help"]):
+        sgd_result = subprocess.run(
+            [
+                "sf", "sgd", "source", "delta",
+                "--from", f"origin/{target_branch}",
+                "--to", bundle_branch,
+                "--output-dir", "delta/",
+                "--generate-delta",
+                "--json",
+            ],
+            capture_output=True,
+            text=True,
+        )
+        if sgd_result.returncode == 0:
+            report.delta_manifest = "delta/package/package.xml"
 
     return report
 

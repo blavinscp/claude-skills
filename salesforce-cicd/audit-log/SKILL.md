@@ -154,6 +154,20 @@ When querying: returns a JSON object with `count` and `entries` array.
 When logging: returns a human-readable confirmation line.
 When querying: returns a formatted table of matching entries.
 
+## Complementary Tools
+
+### AuditForce — Org-Side Audit Trail
+[AuditForce](https://github.com/danieljpeter/AuditForce) provides native Salesforce visibility into the Setup Audit Trail. It complements this pipeline audit log:
+
+| Aspect | Pipeline Audit (`/audit-log`) | Org Audit (AuditForce) |
+|--------|------------------------------|----------------------|
+| What it tracks | Pipeline actions (promote, validate, deploy) | Org configuration changes (field adds, profile edits) |
+| Storage | JSON-lines in `pipeline-audit/` | Salesforce SetupAuditTrail object |
+| Retention | 6+ years (HIPAA) | 180 days (Salesforce limit) |
+| Access | Git repo / local file | Salesforce UI |
+
+For full HIPAA coverage, use both: pipeline audit for deployment actions, AuditForce for org-side changes.
+
 ## Anti-Patterns
 
 - **Logging PHI** -- never include patient data, record IDs, or health information

@@ -74,6 +74,16 @@ HIPAA Compliance Checklist:
 5. Check deployment window against blackout periods
 6. Generate compliance report suitable for CCB attachment
 
+### Workflow 4: Org Audit Trail Review
+**Goal:** Review org-side configuration changes using AuditForce alongside pipeline audit logs.
+
+**Steps:**
+1. Deploy AuditForce to the target org (from https://github.com/danieljpeter/AuditForce)
+2. Review Setup Audit Trail for recent configuration changes
+3. Cross-reference with pipeline audit log (`/audit-log --query`)
+4. Flag any org changes that bypassed the pipeline
+5. Document findings in compliance report
+
 ## PHI Object Classification
 
 | Object | Classification | Monitoring Level |
@@ -100,3 +110,5 @@ HIPAA Compliance Checklist:
 
 - [Audit Log SKILL.md](../../salesforce-cicd/audit-log/SKILL.md)
 - [CCB Submit SKILL.md](../../salesforce-cicd/ccb-submit/SKILL.md)
+- **HIPAA Compliance Developer Guide** — https://github.com/truevault-safe/hipaa-compliance-developers-guide
+- **Open Source Tools Reference** — `../../salesforce-cicd/references/open-source-tools.md`

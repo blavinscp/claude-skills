@@ -45,6 +45,25 @@ The Salesforce CI/CD Pipeline skill suite provides a complete replacement for Co
 
 See [references/mcp-requirements.md](references/mcp-requirements.md) for configuration details.
 
+### Recommended Open Source Tools (Optional)
+
+These tools enhance the pipeline but are not required. Scripts detect their availability at runtime and fall back to built-in logic when not installed.
+
+```bash
+# Tier 1 — High value
+sf plugins install sfdx-git-delta                              # Delta package.xml from git diff
+sf plugins install sf-decomposer                               # Granular profile/permset files
+sf plugins install @jayree/sfdx-plugin-manifest                # Manifest generation + cleanup
+sf plugins install @salesforce/plugin-omnistudio-migration-tool # OmniStudio migration
+npm install --global vlocity                                   # OmniStudio dependency-ordered deploy
+
+# Tier 2 — Patterns & automation
+sf plugins install sfdx-hardis                                 # Monitoring, backup, CI generation
+# force-md: download from https://github.com/ForceCLI/force-md/releases
+```
+
+See [references/open-source-tools.md](references/open-source-tools.md) for full documentation.
+
 ## Pipeline Architecture
 
 ```
@@ -123,3 +142,11 @@ These agents (in `.claude/agents/`) orchestrate the skills:
 - `engineering/release-manager` — Changelog generation, semantic versioning
 - `engineering/ci-cd-pipeline-builder` — GitLab CI config generation
 - `engineering/migration-architect` — Phased migration planning
+
+## References
+
+- [Open Source Tools](references/open-source-tools.md) — All 10 recommended tools with install commands
+- [CI Workflow Patterns](references/ci-workflow-patterns.md) — GitHub Actions + GitLab CI patterns
+- [MCP Requirements](references/mcp-requirements.md) — MCP server configuration
+- [OmniStudio Sequencing](references/omnistudio-sequencing.md) — Component dependency ordering
+- [Recommended Hooks](references/recommended-hooks.md) — Claude Code hook configuration

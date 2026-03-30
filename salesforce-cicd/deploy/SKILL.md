@@ -96,6 +96,14 @@ Each phase must succeed before proceeding. If a phase fails, do not continue —
 
 See [../references/omnistudio-sequencing.md](../references/omnistudio-sequencing.md) for dependency rules.
 
+### Workflow: OmniStudio Deploy via Vlocity Build
+
+```bash
+vlocity -sfdx.username qa -job deploy.yaml packDeploy
+```
+
+Vlocity Build handles dependency ordering automatically. No need for manual phased deployment.
+
 ### Workflow 4: Dry Run
 
 Preview the exact sf CLI command that would execute without running it.

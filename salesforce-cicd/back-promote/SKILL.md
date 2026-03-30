@@ -20,6 +20,7 @@ The back-promote skill generates a chain of merge request specifications that th
 - **GitLab MCP** configured for the project repository
 - **Git** branches following the environment topology (`main`, `uat`, `qa`, `dev1`)
 - **Audit log** skill available (all back-promotes are logged)
+- **sfdx-git-delta (optional)** — Generates destructiveChanges.xml for removed metadata
 
 ## Core Workflows
 
@@ -79,6 +80,16 @@ Human-readable output for review before executing.
 python3 salesforce-cicd/back-promote/scripts/back_promote.py \
   --deployed-env main \
   --format text
+```
+
+### Workflow: Delta Back-Promotion with SGD
+Use SGD to identify exactly what changed between environments and generate both package.xml and destructiveChanges.xml for back-promotion:
+```bash
+# Generate delta for back-promote: main -> uat
+sf sgd source delta --from origin/uat --to origin/main --output-dir delta/ --generate-delta
+
+# Clean manifest if @jayree available
+sf jayree manifest cleanup --file delta/package/package.xml
 ```
 
 ## Conflict Resolution

@@ -21,6 +21,15 @@ class CLIError(Exception):
     pass
 
 
+def detect_tool(cmd_parts: list) -> bool:
+    """Check whether an external CLI tool is available."""
+    try:
+        subprocess.run(cmd_parts, capture_output=True, timeout=10)
+        return True
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+
 @dataclass
 class ComponentResult:
     total: int = 0
@@ -95,6 +104,12 @@ def parse_args() -> argparse.Namespace:
         help="Output format (default: text)",
     )
     parser.add_argument("--dry-run", action="store_true", help="Show command without executing")
+    parser.add_argument(
+        "--omnistudio-tool",
+        choices=["native", "vlocity"],
+        default="native",
+        help="Tool for OmniStudio validation: native (sf CLI sequencing) or vlocity (vlocity_build)",
+    )
     return parser.parse_args()
 
 
@@ -282,11 +297,27 @@ def main() -> int:
         )
         report.duration_seconds = round(elapsed, 1)
 
+    # Check vlocity_build availability if selected
+    omnistudio_note = None
+    if args.omnistudio_tool == "vlocity":
+        if detect_tool(["vlocity", "--help"]):
+            omnistudio_note = "vlocity_build selected and available for OmniStudio validation"
+        else:
+            omnistudio_note = "vlocity_build selected but not found on PATH; falling back to native sf CLI sequencing"
+
     # Output
+    report_dict = asdict(report)
+    if omnistudio_note:
+        report_dict["omnistudio_tool"] = args.omnistudio_tool
+        report_dict["omnistudio_note"] = omnistudio_note
+
     if args.format == "json":
-        print(json.dumps(asdict(report), indent=2))
+        print(json.dumps(report_dict, indent=2))
     else:
-        print(format_text(report))
+        text_output = format_text(report)
+        if omnistudio_note:
+            text_output += f"\n\nOmniStudio: {omnistudio_note}"
+        print(text_output)
 
     # Exit code based on status
     if report.status == "Succeeded":

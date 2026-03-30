@@ -71,6 +71,25 @@ For deployments containing OmniStudio components, split into phases:
 
 See [../references/omnistudio-sequencing.md](../references/omnistudio-sequencing.md) for dependency rules.
 
+### Workflow 5: OmniStudio Validation via Vlocity Build
+
+When vlocity_build is installed, use it for OmniStudio components instead of manual 4-phase sequencing:
+
+```bash
+# Install: npm install --global vlocity
+# Create validate.yaml job file:
+# projectPath: ./vlocity-datapacks
+# queries:
+#   - OmniScript
+#   - DataRaptor
+#   - IntegrationProcedure
+#   - FlexCard
+
+vlocity -sfdx.username qa -job validate.yaml packDeploy --simulated
+```
+
+The manual 4-phase approach remains available as fallback for environments without vlocity_build.
+
 ## Test Level Decision Matrix
 
 | Scenario | Test Level | Why |

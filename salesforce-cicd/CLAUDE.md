@@ -39,6 +39,34 @@ All pipeline actions must be logged via `/audit-log`. Audit entries must:
 - Be retained for minimum 6 years
 - Be stored as JSON-lines in `pipeline-audit/`
 
+## External Tools
+
+Scripts detect these tools at runtime and use them when available:
+
+| Tool | Install | Used By |
+|------|---------|---------|
+| sfdx-git-delta | `sf plugins install sfdx-git-delta` | `/promote`, `/back-promote` |
+| sf-decomposer | `sf plugins install sf-decomposer` | `/profile-clean` |
+| @jayree/manifest | `sf plugins install @jayree/sfdx-plugin-manifest` | `/promote`, `@meta-analyst` |
+| vlocity_build | `npm install -g vlocity` | `/validate`, `/deploy`, `@omnistudio-dev` |
+| force-md | Go binary from GitHub | `/profile-clean` |
+| sfdx-hardis | `sf plugins install sfdx-hardis` | `@meta-analyst`, `@pipeline-ops` |
+
+See [references/open-source-tools.md](references/open-source-tools.md) for complete documentation.
+
+### Tool Detection Pattern
+
+All scripts use this pattern for graceful degradation:
+
+```python
+def detect_tool(cmd_parts: list) -> bool:
+    try:
+        subprocess.run(cmd_parts, capture_output=True, timeout=10)
+        return True
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+```
+
 ## Creating New Skills
 
 Follow the standard pattern:

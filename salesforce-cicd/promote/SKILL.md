@@ -19,6 +19,8 @@ The Promote skill is the primary orchestrator for the Salesforce CI/CD pipeline.
 - **GitLab MCP** configured for the project repository
 - **SalesforceDX MCP** configured for target org
 - **Git** with access to push branches
+- **sfdx-git-delta (optional)** — `sf plugins install sfdx-git-delta` — Generates delta package.xml from git diff
+- **@jayree/sfdx-plugin-manifest (optional)** — `sf plugins install @jayree/sfdx-plugin-manifest` — Manifest cleanup
 
 ## Core Workflows
 
@@ -73,6 +75,26 @@ python3 salesforce-cicd/promote/scripts/create_bundle.py \
   --stories US-1234,US-1235,US-1236 \
   --target-env qa \
   --format json
+```
+
+### Workflow 5: Delta Promotion with SGD
+
+When sfdx-git-delta is installed, generate the deployment manifest automatically from the git diff between the bundle and target branch instead of using a manually-curated package.xml.
+
+```bash
+# Generate delta package from bundle branch
+sf sgd source delta \
+  --from origin/qa \
+  --to bundle/B0042 \
+  --output-dir delta/ \
+  --generate-delta
+
+# Clean up the manifest (if @jayree/sfdx-plugin-manifest installed)
+sf jayree manifest cleanup --file delta/package/package.xml
+
+# Validate using the delta manifest
+python3 salesforce-cicd/validate/scripts/validate_deployment.py \
+  --target-org qa --manifest delta/package/package.xml --format json
 ```
 
 ## Promotion Path
@@ -139,6 +161,8 @@ python3 salesforce-cicd/promote/scripts/promotion_orchestrator.py --help
 | Validation | `/validate` | Run sf project deploy validate |
 | Audit logging | `/audit-log` | Record promotion action |
 | Jira updates | `@release-mgr` | Post status to Jira stories |
+| Delta manifest | `sfdx-git-delta` (SGD) | Generate package.xml from git diff |
+| Manifest cleanup | `@jayree/sfdx-plugin-manifest` | Remove stale entries from package.xml |
 
 ## Anti-Patterns
 

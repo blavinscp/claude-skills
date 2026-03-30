@@ -40,6 +40,8 @@ Primary orchestrator for the Salesforce CI/CD pipeline. Replaces Copado's promot
 1. **Promotion Path Guide** — `../../salesforce-cicd/promote/references/promotion-path-guide.md`
 2. **Copado Migration Mapping** — `../../salesforce-cicd/promote/references/copado-migration-mapping.md`
 3. **OmniStudio Sequencing** — `../../salesforce-cicd/references/omnistudio-sequencing.md`
+4. **CI Workflow Patterns** — `../../salesforce-cicd/references/ci-workflow-patterns.md`
+5. **Open Source Tools Reference** — `../../salesforce-cicd/references/open-source-tools.md`
 
 ## Core Workflows
 
@@ -107,6 +109,15 @@ python3 ../../salesforce-cicd/back-promote/scripts/back_promote.py \
 2. Check last commit date on each
 3. Report branches older than threshold
 4. Suggest cleanup or completion
+
+### Workflow 5: CI Pipeline with External Tools
+**Goal:** Generate and maintain CI pipeline configuration using external tools.
+
+**Steps:**
+1. Use sfdx-hardis to generate initial CI config: `sf hardis:project:deploy:smart --check`
+2. For GitHub Actions, reference octoforce-actions patterns (see `../../salesforce-cicd/references/ci-workflow-patterns.md`)
+3. For GitLab CI, adapt patterns with GitLab-specific syntax
+4. Integrate SGD into CI for delta deployments on every push
 
 ## Integration Points
 

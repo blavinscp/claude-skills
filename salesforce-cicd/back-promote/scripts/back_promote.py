@@ -15,6 +15,7 @@ Usage:
 
 import argparse
 import json
+import shutil
 import sys
 from datetime import datetime, timezone
 
@@ -31,6 +32,11 @@ ENV_TO_BRANCH = {
 }
 
 VALID_DEPLOY_ENVS = {"main", "uat", "qa"}
+
+
+def detect_tool(tool_name: str) -> bool:
+    """Detect whether a CLI tool is available on the system PATH."""
+    return shutil.which(tool_name) is not None
 
 
 def build_mr_specs(deployed_env: str, target_env: str | None = None) -> list[dict]:
@@ -58,6 +64,7 @@ def build_mr_specs(deployed_env: str, target_env: str | None = None) -> list[dic
     else:
         end_idx = len(ENV_CHAIN) - 1
 
+    sgd_available = detect_tool("sf") and detect_tool("git")
     mr_specs = []
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
@@ -67,9 +74,16 @@ def build_mr_specs(deployed_env: str, target_env: str | None = None) -> list[dic
         source_branch = ENV_TO_BRANCH[source]
         target_branch = ENV_TO_BRANCH[target]
 
+        sgd_commands = []
+        if sgd_available:
+            sgd_commands.append(
+                f"sf sgd source delta --from origin/{target_branch} --to origin/{source_branch} --output-dir delta/ --generate-delta"
+            )
+
         mr_spec = {
             "source_branch": source_branch,
             "target_branch": target_branch,
+            "sgd_commands": sgd_commands,
             "title": f"Back-promote: {source_branch} -> {target_branch}",
             "description": (
                 f"## Back-Promotion\n\n"
@@ -171,10 +185,13 @@ def main() -> int:
 
     mr_specs = build_mr_specs(args.deployed_env, args.target_env)
 
+    sgd_available = detect_tool("sf") and detect_tool("git")
+
     if args.format == "json":
         output = {
             "deployed_env": args.deployed_env,
             "target_env": args.target_env or ENV_CHAIN[-1],
+            "sgd_available": sgd_available,
             "mr_count": len(mr_specs),
             "mr_specs": mr_specs,
         }

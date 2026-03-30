@@ -24,6 +24,7 @@ Metadata drift detective. Compares Salesforce org metadata against Git source of
 1. **Promotion Path Guide** — `../../salesforce-cicd/promote/references/promotion-path-guide.md`
 2. **OmniStudio Sequencing** — `../../salesforce-cicd/references/omnistudio-sequencing.md`
 3. **MCP Requirements** — `../../salesforce-cicd/references/mcp-requirements.md`
+4. **Open Source Tools Reference** — `../../salesforce-cicd/references/open-source-tools.md`
 
 ## Core Workflows
 
@@ -60,6 +61,26 @@ Metadata drift detective. Compares Salesforce org metadata against Git source of
 2. Generate package.xml manifest for sync deployment
 3. Validate the sync package against target org
 4. Create promotion through standard pipeline if needed
+
+### Workflow 4: Generate Org Manifest
+**Goal:** Get complete metadata inventory from an org using @jayree/sfdx-plugin-manifest.
+
+**Steps:**
+1. Install: `sf plugins install @jayree/sfdx-plugin-manifest`
+2. Generate full manifest: `sf jayree manifest generate --target-org <org>`
+3. Compare generated manifest against branch's package.xml
+4. Identify components in org not tracked in source control
+5. Report untracked components for review
+
+### Workflow 5: Automated Backup with sfdx-hardis
+**Goal:** Schedule daily metadata backup using sfdx-hardis.
+
+**Steps:**
+1. Install: `sf plugins install sfdx-hardis`
+2. Configure monitoring: `sf hardis:org:monitor --target-org production`
+3. Set up daily backup: `sf hardis:org:retrieve:full --target-org production`
+4. Compare backup against previous day for drift detection
+5. Integrate with Grafana dashboard for visualization
 
 ## Drift Categories
 

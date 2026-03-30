@@ -21,6 +21,8 @@ This replaces Copado's "Cleaned full profile and permissionset" step with a tran
 - **package.xml** manifest defining the deployment scope
 - **Profile/PermissionSet files** in Salesforce metadata format (`.profile-meta.xml`, `.permissionset-meta.xml`)
 - Source directory following standard SFDX or MDAPI layout
+- **sf-decomposer (optional)** — `sf plugins install sf-decomposer`
+- **force-md (optional)** — Go binary from GitHub releases
 
 ## Core Workflows
 
@@ -78,6 +80,31 @@ if [ $? -ne 0 ]; then
   echo "Profile clean failed"
   exit 1
 fi
+```
+
+### Workflow: Decomposed Profile Workflow
+
+For projects using sf-decomposer, profiles are already split into granular files. The stripping process operates on individual files instead of monolithic XML:
+
+```bash
+# Recompose before stripping (if decomposed)
+sf decomposer recompose -m "profile" -m "permissionset"
+
+# Run standard strip
+python3 salesforce-cicd/profile-clean/scripts/strip_profiles.py \
+  --manifest package.xml --source-dir force-app/main/default --format json
+
+# Re-decompose after stripping
+sf decomposer decompose -m "profile" -m "permissionset" -s "grouped-by-tag" -p
+```
+
+### Workflow: Metadata Tidying with force-md
+
+After stripping, sort XML elements for consistent diffs:
+
+```bash
+force-md profile tidy force-app/main/default/profiles/*.profile-meta.xml
+force-md permissionset tidy force-app/main/default/permissionsets/*.permissionset-meta.xml
 ```
 
 ## How It Works
@@ -173,3 +200,8 @@ python3 salesforce-cicd/profile-clean/scripts/strip_profiles.py --help
 - **Never strip managed package references** — Managed package metadata is not in your package.xml but removing its profile entries revokes user access to installed packages
 - **Never skip dry-run on first use** — Always preview what will be stripped before modifying files in a new project
 - **Never run profile-clean after deployment** — Run it before validation/deployment as a preparation step, not as a fix-up
+
+## References
+
+- [references/profile-permset-stripping-rules.md](references/profile-permset-stripping-rules.md) — Element mapping rules
+- [references/decomposed-profiles-guide.md](references/decomposed-profiles-guide.md) — Working with sf-decomposer decomposed profiles
